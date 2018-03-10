@@ -28,6 +28,12 @@ int zlog_init(const char *confpath);
 int zlog_reload(const char *confpath);
 void zlog_fini(void);
 
+int zlog_add_format(const char *ctx);
+void zlog_del_format(const char *name);
+
+int zlog_add_rule(const char *ctx);
+void zlog_del_rule(const char *name);
+
 void zlog_profile(void);
 
 zlog_category_t *zlog_get_category(const char *cname);

@@ -35,6 +35,61 @@
 #define ZLOG_CONF_BACKUP_ROTATE_LOCK_FILE "/tmp/zlog.lock"
 /*******************************************************************************/
 
+void zlog_conf_del_rule(zlog_conf_t * a_conf, const char *name)
+{
+	//TODO: 
+}
+
+int zlog_conf_add_rule(zlog_conf_t * a_conf, const char *ctx)
+{
+	zlog_rule_t *new_rule = NULL;
+
+	new_rule = zlog_rule_new(
+			(char*)ctx,
+			a_conf->levels,
+			a_conf->default_format,
+			a_conf->formats,
+			a_conf->file_perms,
+			a_conf->fsync_period,
+			&(a_conf->time_cache_count));
+	if (!new_rule) {
+		zc_error("zlog_rule_new fail");
+		return -1;
+	}
+
+	if (zc_arraylist_add(a_conf->rules, new_rule)) {
+		zlog_rule_del(new_rule);
+		zc_error("zc_arraylist_add fail");
+		return -1;
+	}
+
+	return 0;
+}
+
+void zlog_conf_del_format(zlog_conf_t * a_conf, const char *name)
+{
+
+}
+
+int zlog_conf_add_format(zlog_conf_t * a_conf, const char *ctx)
+{
+	zlog_format_t *a_format = NULL;
+
+	a_format = zlog_format_new((char *)ctx, &(a_conf->time_cache_count));
+	if (!a_format) {
+		zc_error("zlog_format_new fail [%s]", ctx);
+        return -1;
+	}
+
+	if (zc_arraylist_add(a_conf->formats, a_format)) {
+		zlog_format_del(a_format);
+		zc_error("zc_arraylist_add fail");
+		return -2;
+	}
+
+    return 0;
+}
+
 void zlog_conf_profile(zlog_conf_t * a_conf, int flag)
 {
 	int i;
@@ -137,6 +192,18 @@ zlog_conf_t *zlog_conf_new(const char *confpath)
 	a_conf->fsync_period = ZLOG_CONF_DEFAULT_FSYNC_PERIOD;
 	/* set default configuration end */
 
+	a_conf->default_format = zlog_format_new(a_conf->default_format_line, &(a_conf->time_cache_count));
+	if (!a_conf->default_format) {
+		zc_error("zlog_format_new fail");
+		goto err;
+	}
+
+	a_conf->rotater = zlog_rotater_new(a_conf->rotate_lock_file);
+	if (!a_conf->rotater) {
+		zc_error("zlog_rotater_new fail");
+		goto err;
+	}
+
 	a_conf->levels = zlog_level_list_new();
 	if (!a_conf->levels) {
 		zc_error("zlog_level_list_new fail");
@@ -177,18 +244,6 @@ err:
 static int zlog_conf_build_without_file(zlog_conf_t * a_conf)
 {
 	zlog_rule_t *default_rule;
-
-	a_conf->default_format = zlog_format_new(a_conf->default_format_line, &(a_conf->time_cache_count));
-	if (!a_conf->default_format) {
-		zc_error("zlog_format_new fail");
-		return -1;
-	}
-
-	a_conf->rotater = zlog_rotater_new(a_conf->rotate_lock_file);
-	if (!a_conf->rotater) {
-		zc_error("zlog_rotater_new fail");
-		return -1;
-	}
 
 	default_rule = zlog_rule_new(
 			ZLOG_CONF_DEFAULT_RULE,
@@ -381,22 +436,6 @@ static int zlog_conf_parse_line(zlog_conf_t * a_conf, char *line, int *section)
 				zc_warn("fsync_period[%ld] >= reload_conf_period[%ld],"
 					"set fsync_period to zero");
 				a_conf->fsync_period = 0;
-			}
-
-			/* now build rotater and default_format
-			 * from the unchanging global setting,
-			 * for zlog_rule_new() */
-			a_conf->rotater = zlog_rotater_new(a_conf->rotate_lock_file);	
-			if (!a_conf->rotater) {
-				zc_error("zlog_rotater_new fail");
-				return -1;
-			}
-
-			a_conf->default_format = zlog_format_new(a_conf->default_format_line,
-							&(a_conf->time_cache_count));
-			if (!a_conf->default_format) {
-				zc_error("zlog_format_new fail");
-				return -1;
 			}
 		}
 		return 0;

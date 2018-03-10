@@ -325,6 +325,35 @@ exit:
 	}
 	return;
 }
+
+/*******************************************************************************/
+int zlog_add_rule(const char *ctx)
+{
+	if (ctx == NULL) return -1;
+
+    int rc = zlog_conf_add_rule(zlog_env_conf, ctx);
+	return rc;
+}
+
+/*******************************************************************************/
+void zlog_del_rule(const char *name)
+{
+	// TODO:
+}
+
+int zlog_add_format(const char* ctx)
+{
+	if (ctx == NULL) return -1;
+    
+	int rc = zlog_conf_add_format(zlog_env_conf, ctx);
+    return rc;
+}
+
+void zlog_del_format(const char* name)
+{
+	// TODO:
+}
+
 /*******************************************************************************/
 zlog_category_t *zlog_get_category(const char *cname)
 {
@@ -1004,5 +1033,3 @@ int zlog_set_record(const char *rname, zlog_record_fn record_output)
 	}
 	return rc;
 }
-
-const char *zlog_version(void) { return ZLOG_VERSION; }

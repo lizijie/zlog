@@ -43,4 +43,10 @@ zlog_conf_t *zlog_conf_new(const char *confpath);
 void zlog_conf_del(zlog_conf_t * a_conf);
 void zlog_conf_profile(zlog_conf_t * a_conf, int flag);
 
+int zlog_conf_add_rule(zlog_conf_t * a_conf, const char *ctx);
+void zlog_conf_del_rule(zlog_conf_t * a_conf, const char *name);
+
+int zlog_conf_add_format(zlog_conf_t * a_conf, const char *ctx);
+void zlog_conf_del_format(zlog_conf_t * a_conf, const char *name);
+
 #endif
