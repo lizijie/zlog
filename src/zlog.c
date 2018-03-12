@@ -329,7 +329,7 @@ exit:
 /*******************************************************************************/
 int zlog_add_rule(const char *ctx)
 {
-	if (ctx == NULL) return -1;
+    zc_assert(ctx, -1)
 
     int rc = zlog_conf_add_rule(zlog_env_conf, ctx);
 	return rc;
@@ -343,7 +343,7 @@ void zlog_del_rule(const char *name)
 
 int zlog_add_format(const char* ctx)
 {
-	if (ctx == NULL) return -1;
+    zc_assert(ctx, -1)
     
 	int rc = zlog_conf_add_format(zlog_env_conf, ctx);
     return rc;
